@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U8 Player with Quality Selection</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .player-container {
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+        }
+        video {
+            width: 100%;
+            max-width: 100%;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 14px;
+            width: 60%;
+            max-width: 400px;
+        }
+        select, button {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="player-container">
+    <h2>Simple M3U8 Player</h2>
+    <video id="video" controls></video>
+    
+    <div class="controls">
+        <input type="text" id="urlInput" placeholder="Enter M3U8 URL" />
+        <button onclick="loadStream()">Load Stream</button>
+        <select id="qualitySelect" class="hidden">
+            <option value="">Select Quality</option>
+        </select>
+    </div>
+</div>
+
+<script>
+    let hls;
+    let video = document.getElementById('video');
+    let urlInput = document.getElementById('urlInput');
+    let qualitySelect = document.getElementById('qualitySelect');
+    let loadStreamButton = document.querySelector('button');
+
+    function loadStream() {
+        const url = urlInput.value.trim();
+        if (!url) {
+            alert("Please enter a valid M3U8 URL.");
+            return;
+        }
+
+        if (hls) {
+            hls.destroy();  // Destroy previous HLS instance if exists
+        }
+
+        hls = new Hls();
+
+        // Event listener for when HLS.js is ready to load the stream
+        hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+            updateQualityOptions(data.levels);
+        });
+
+        hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
+            qualitySelect.value = data.level;  // Update the quality dropdown when quality changes
+        });
+
+        // Load the stream
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        
+        // Hide the input and load button once the stream is loaded
+        loadStreamButton.classList.add('hidden');
+        urlInput.classList.add('hidden');
+        qualitySelect.classList.remove('hidden');
+
+        // Play the video once it's loaded
+        video.play();
+
+        hls.on(Hls.Events.ERROR, function(event, data) {
+            console.error('HLS Error:', data);
+            alert('Error loading the stream. Check the console for details.');
+        });
+    }
+
+    function updateQualityOptions(levels) {
+        // Clear the current quality options
+        qualitySelect.innerHTML = '<option value="">Select Quality</option>';
+
+        // Loop through available qualities and add them to the dropdown
+        levels.forEach((level, index) => {
+            let option = document.createElement('option');
+            option.value = index;
+            option.innerText = `Quality ${index + 1} (${Math.round(level.height)}p)`;
+            qualitySelect.appendChild(option);
+        });
+
+        // Set default quality to the first option
+        qualitySelect.value = 0;
+    }
+
+    qualitySelect.addEventListener('change', function() {
+        const qualityIndex = parseInt(qualitySelect.value);
+        if (qualityIndex >= 0) {
+            hls.startLevel = qualityIndex;  // Set the desired quality level
+        }
+    });
+</script>
+
+</body>
+</html>
