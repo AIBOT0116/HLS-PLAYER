@@ -3,135 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M3U8 Player with Quality Selection</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>Shaka Player with HLS and Quality Selection</title>
+
+    <!-- Shaka Player CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/3.0.0/shaka-player.compiled.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #333;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
         }
-        .player-container {
-            text-align: center;
+        #player-container {
             width: 80%;
             max-width: 800px;
-        }
-        video {
-            width: 100%;
-            max-width: 100%;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        input[type="text"] {
-            padding: 8px;
-            font-size: 14px;
-            width: 60%;
-            max-width: 400px;
-        }
-        select, button {
-            padding: 8px 12px;
-            font-size: 14px;
-        }
-        .hidden {
-            display: none;
+            background-color: black;
         }
     </style>
 </head>
 <body>
 
-<div class="player-container">
-    <h2>Simple M3U8 Player</h2>
-    <video id="video" controls></video>
-    
-    <div class="controls">
-        <input type="text" id="urlInput" placeholder="Enter M3U8 URL" />
-        <button onclick="loadStream()">Load Stream</button>
-        <select id="qualitySelect" class="hidden">
-            <option value="">Select Quality</option>
-        </select>
-    </div>
-</div>
+    <div id="player-container"></div>
 
-<script>
-    let hls;
-    let video = document.getElementById('video');
-    let urlInput = document.getElementById('urlInput');
-    let qualitySelect = document.getElementById('qualitySelect');
-    let loadStreamButton = document.querySelector('button');
+    <script>
+        // Initialize Shaka Player
+        function initializePlayer() {
+            const video = document.createElement('video');
+            document.getElementById('player-container').appendChild(video);
 
-    function loadStream() {
-        const url = urlInput.value.trim();
-        if (!url) {
-            alert("Please enter a valid M3U8 URL.");
-            return;
+            // Create a new Shaka Player instance
+            const player = new shaka.Player(video);
+
+            // Attach error handling to the player
+            player.addEventListener('error', onError);
+
+            // Load the HLS stream URL
+            const streamUrl = 'https://vhoichoi.viewlift.com/Renditions/20241028/1730121916094_maaza_grand_pujo_parikrama_platform/hls/1730121916094_maaza_grand_pujo_parikrama_platform.m3u8';
+
+            // Configure player options to support HLS
+            player.load(streamUrl).then(function() {
+                console.log('The video has successfully loaded!');
+            }).catch(onError);
+
+            // Enable the quality selector
+            player.configure({
+                abr: {
+                    enabled: true, // Enable Adaptive Bitrate
+                    defaultBandwidthEstimate: 5000000, // Adjust as necessary
+                }
+            });
+
+            // Add Quality Selector UI (you can customize this)
+            const ui = new shaka.ui.Controls(player, video);
+            ui.configure({
+                controlPanelElements: ['playpause', 'volume', 'progress', 'time', 'fullscreen', 'quality']
+            });
         }
 
-        if (hls) {
-            hls.destroy();  // Destroy previous HLS instance if exists
+        // Error handler
+        function onError(error) {
+            console.error('Error code', error.code, 'object', error);
         }
 
-        hls = new Hls();
-
-        // Event listener for when HLS.js is ready to load the stream
-        hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
-            updateQualityOptions(data.levels);
-        });
-
-        hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
-            qualitySelect.value = data.level;  // Update the quality dropdown when quality changes
-        });
-
-        // Load the stream
-        hls.loadSource(url);
-        hls.attachMedia(video);
-        
-        // Hide the input and load button once the stream is loaded
-        loadStreamButton.classList.add('hidden');
-        urlInput.classList.add('hidden');
-        qualitySelect.classList.remove('hidden');
-
-        // Play the video once it's loaded
-        video.play();
-
-        hls.on(Hls.Events.ERROR, function(event, data) {
-            console.error('HLS Error:', data);
-            alert('Error loading the stream. Check the console for details.');
-        });
-    }
-
-    function updateQualityOptions(levels) {
-        // Clear the current quality options
-        qualitySelect.innerHTML = '<option value="">Select Quality</option>';
-
-        // Loop through available qualities and add them to the dropdown
-        levels.forEach((level, index) => {
-            let option = document.createElement('option');
-            option.value = index;
-            option.innerText = `Quality ${index + 1} (${Math.round(level.height)}p)`;
-            qualitySelect.appendChild(option);
-        });
-
-        // Set default quality to the first option
-        qualitySelect.value = 0;
-    }
-
-    qualitySelect.addEventListener('change', function() {
-        const qualityIndex = parseInt(qualitySelect.value);
-        if (qualityIndex >= 0) {
-            hls.startLevel = qualityIndex;  // Set the desired quality level
-        }
-    });
-</script>
+        // Initialize Shaka Player when the page is loaded
+        window.onload = initializePlayer;
+    </script>
 
 </body>
 </html>
