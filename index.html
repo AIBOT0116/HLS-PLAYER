@@ -3,77 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaka Player with HLS and Quality Selection</title>
-
-    <!-- Shaka Player CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/3.0.0/shaka-player.compiled.js"></script>
-
+    <title>HLS Video Player with Quality Selector</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #333;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
         #player-container {
-            width: 80%;
+            position: relative;
+            width: 100%;
             max-width: 800px;
-            background-color: black;
+            margin: 0 auto;
+            background: #000;
+        }
+        video {
+            width: 100%;
+        }
+        .quality-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div id="player-container"></div>
+<div id="player-container">
+    <video id="video" controls></video>
+    <button class="quality-selector" id="quality-selector">Select Quality</button>
+</div>
 
-    <script>
-        // Initialize Shaka Player
-        function initializePlayer() {
-            const video = document.createElement('video');
-            document.getElementById('player-container').appendChild(video);
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+    const video = document.getElementById('video');
+    const qualitySelectorButton = document.getElementById('quality-selector');
+    let hls = null;
 
-            // Create a new Shaka Player instance
-            const player = new shaka.Player(video);
+    // URL of the HLS stream
+    const streamUrl = 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8';
 
-            // Attach error handling to the player
-            player.addEventListener('error', onError);
+    // Initialize HLS.js
+    if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
 
-            // Load the HLS stream URL
-            const streamUrl = 'https://vhoichoi.viewlift.com/Renditions/20241028/1730121916094_maaza_grand_pujo_parikrama_platform/hls/1730121916094_maaza_grand_pujo_parikrama_platform.m3u8';
+        // Event: When HLS is ready
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+            // Set up the quality selector after the manifest is parsed
+            setupQualitySelector();
+        });
 
-            // Configure player options to support HLS
-            player.load(streamUrl).then(function() {
-                console.log('The video has successfully loaded!');
-            }).catch(onError);
+        // Event: When the stream is successfully loaded
+        hls.on(Hls.Events.MANIFEST_LOADED, function (event, data) {
+            console.log('Manifest loaded, available quality levels:', data.levels);
+        });
 
-            // Enable the quality selector
-            player.configure({
-                abr: {
-                    enabled: true, // Enable Adaptive Bitrate
-                    defaultBandwidthEstimate: 5000000, // Adjust as necessary
+        // Event: If there's an error loading the stream
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            if (data.fatal) {
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        alert('Network error while loading the video.');
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                    case Hls.ErrorTypes.OTHER_ERROR:
+                        alert('Error while loading the video stream.');
+                        break;
+                    default:
+                        break;
                 }
+            }
+        });
+
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // If browser supports HLS natively (like Safari), use it
+        video.src = streamUrl;
+    } else {
+        alert('HLS is not supported in this browser.');
+    }
+
+    // Setup the quality selector dropdown
+    function setupQualitySelector() {
+        const availableQualities = hls.levels.map((level, index) => {
+            return {
+                label: `${level.width}x${level.height} (${Math.round(level.bitrate / 1000)} kbps)`,
+                index: index
+            };
+        });
+
+        qualitySelectorButton.addEventListener('click', function () {
+            let qualityMenu = availableQualities.map(quality => {
+                return `<option value="${quality.index}">${quality.label}</option>`;
+            }).join('');
+
+            const qualityMenuHTML = `
+                <select id="quality-menu">
+                    ${qualityMenu}
+                </select>
+            `;
+
+            // Show the dropdown menu
+            const qualityMenuDiv = document.createElement('div');
+            qualityMenuDiv.innerHTML = qualityMenuHTML;
+            qualityMenuDiv.style.position = 'absolute';
+            qualityMenuDiv.style.top = '40px';
+            qualityMenuDiv.style.right = '10px';
+            qualityMenuDiv.style.background = '#000';
+            qualityMenuDiv.style.color = '#fff';
+            qualityMenuDiv.style.border = '1px solid #ccc';
+            qualityMenuDiv.style.padding = '10px';
+
+            qualityMenuDiv.querySelector('#quality-menu').addEventListener('change', function () {
+                const selectedIndex = this.value;
+                hls.startLevel = parseInt(selectedIndex);
+                hls.currentLevel = parseInt(selectedIndex);
+                qualityMenuDiv.remove();
             });
 
-            // Add Quality Selector UI (you can customize this)
-            const ui = new shaka.ui.Controls(player, video);
-            ui.configure({
-                controlPanelElements: ['playpause', 'volume', 'progress', 'time', 'fullscreen', 'quality']
-            });
-        }
+            document.body.appendChild(qualityMenuDiv);
+        });
+    }
 
-        // Error handler
-        function onError(error) {
-            console.error('Error code', error.code, 'object', error);
-        }
-
-        // Initialize Shaka Player when the page is loaded
-        window.onload = initializePlayer;
-    </script>
+</script>
 
 </body>
 </html>
