@@ -1,7 +1,9 @@
-
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Video Player using HLS With Quality Controls</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Player using HLS.js with Headers</title>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.2/plyr.css" />
   <style>
     /* Body styling */
@@ -26,8 +28,8 @@
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
-    
-    .video-container h3{
+
+    .video-container h3 {
       color: #eee;
       text-align: center;
     }
@@ -82,87 +84,96 @@
 </head>
 <body>
 
-  <div class="video-container">
-    <div class="loader" id="loader"></div>
-    <video id="player" controls></video>
+<div class="video-container">
+  <div class="loader" id="loader"></div>
+  <video id="player" controls></video>
+  <h3>If the player doesn't work, please try again later.</h3>
+</div>
 
-    <h3>if player doesn't work. please Retry after sometime</h3>
+<script src="//cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.plyr.io/3.7.2/plyr.js"></script>
 
-  </div>
-  <script src="//cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script src="https://cdn.plyr.io/3.7.2/plyr.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.getElementById('player');
+  const loader = document.getElementById('loader');
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const video = document.getElementById('player');
-      const loader = document.getElementById('loader');
-      const source = "https://vkvsd14.okcdn.ru/cmaf/7381061929703/sig/JlPj5oTsuqw/srcIp/3.108.194.217/urls/185.226.53.64/expires/1733778651433/clientType/13/srcAg/CHROME/fromCache/1/mid/8776469523431/id/7381061929703/get/COfX5PK2_wEQ6AcYAzIICgYIgAUQ6AI6BAjE2AJaBggBEAIoF2ICCBBpbYZ53zFQOQ/track.m3u8";
-      const defaultOptions = {};
+  const sourceUrl = "https://vkvsd14.okcdn.ru/cmaf/7381061929703/sig/JlPj5oTsuqw/srcIp/3.108.194.217/urls/185.226.53.64/expires/1733778651433/clientType/13/srcAg/CHROME/fromCache/1/mid/8776469523431/id/7381061929703/get/COfX5PK2_wEQ6AcYAzIICgYIgAUQ6AI6BAjE2AJaBggBEAIoF2ICCBBpbYZ53zFQOQ/track.m3u8";
 
-      // Show loading spinner
-      loader.style.display = 'block';
+  // Show the loading spinner
+  loader.style.display = 'block';
 
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-
-        // Load video source
-        hls.loadSource(source);
-
-        // Event listener when the manifest is parsed (video metadata is ready)
-        hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
-          const availableQualities = hls.levels.map(level => level.height);
-
-          defaultOptions.controls = [
-            'play-large',
-            'play',
-            'progress',
-            'current-time',
-            'duration',
-            'mute',
-            'volume',
-            'captions',
-            'settings',
-            'pip',
-            'airplay',
-            'fullscreen'
-          ];
-
-          // Add quality control option
-          defaultOptions.quality = {
-            default: availableQualities[0],
-            options: availableQualities,
-            forced: true,
-            onChange: (e) => updateQuality(e)
-          };
-
-          // Initialize Plyr with options
-          new Plyr(video, defaultOptions);
-
-          // Hide loader once video is ready
-          loader.style.display = 'none';
-          video.style.opacity = 1;
-        });
-
-        // Attach the media to hls.js
-        hls.attachMedia(video);
-
-        // Save the hls instance globally
-        window.hls = hls;
-      } else {
-        // If HLS is not supported, show a fallback error message
-        loader.textContent = 'HLS not supported in this browser. Please use a compatible browser.';
-      }
-
-      // Function to update video quality based on user selection
-      function updateQuality(newQuality) {
-        window.hls.levels.forEach((level, levelIndex) => {
-          if (level.height === newQuality) {
-            window.hls.currentLevel = levelIndex;
-          }
-        });
+  if (Hls.isSupported()) {
+    const hls = new Hls({
+      xhrSetup: function (xhr) {
+        // Add custom headers to bypass 403 error
+        xhr.setRequestHeader('Referer', 'https://aibot0116.github.io/HLS-PLAYER/');  // Use the actual website URL that hosts the stream
+        xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
       }
     });
-  </script>
+
+    // Load the source URL using HLS.js
+    hls.loadSource(sourceUrl);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+      const availableQualities = hls.levels.map(level => level.height);
+
+      const options = {
+        controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+        quality: {
+          default: availableQualities[0],
+          options: availableQualities,
+          forced: true,
+          onChange: (e) => updateQuality(e),
+        }
+      };
+
+      // Initialize Plyr
+      const player = new Plyr(video, options);
+
+      // Hide the loader once the video is ready
+      loader.style.display = 'none';
+      video.style.opacity = 1;
+    });
+
+    hls.on(Hls.Events.ERROR, function (event, data) {
+      console.error("HLS.js error:", data);
+      if (data.fatal) {
+        switch (data.fatal) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            console.error("Network error. Unable to load stream.");
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            console.error("Media error while loading stream.");
+            break;
+          case Hls.ErrorTypes.OTHER_ERROR:
+            console.error("An unknown error occurred:", data);
+            break;
+          default:
+            console.error("Unexpected error:", data);
+        }
+      }
+    });
+
+    // Attach the media to HLS.js
+    hls.attachMedia(video);
+    window.hls = hls;
+
+  } else {
+    // If HLS is not supported, show an error message
+    loader.textContent = 'HLS not supported in this browser. Please use a compatible browser.';
+  }
+
+  // Function to update video quality based on user selection
+  function updateQuality(newQuality) {
+    window.hls.levels.forEach((level, levelIndex) => {
+      if (level.height === newQuality) {
+        window.hls.currentLevel = levelIndex;
+      }
+    });
+  }
+});
+</script>
 
 </body>
 </html>
