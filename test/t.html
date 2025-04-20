@@ -262,13 +262,14 @@
     </div>
 
     <script>
-        const m3uLinkPrimary = 'https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.m3u';
+        const m3uLinkPrimary = 'https://astro-mpd-proxy.vercel.app/?get=2504';
         const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/temp.live';
         const targetUrl = 'https://webiptv.updatesbyrahul.site/proxy/sgcor.php/https://linearjitp-playback.astro.com.my/dash-wv/linear/2504/default_ott.mpd?|drmScheme=clearkey&drmLicense=03c2e0af2f8159f9f0ce9b5dbc865f10:cd84ed136b0cc71f8ab8cd4d4f6a2e4c';
         let neonActive = true;
         let player; // Shaka Player instance  
         let isIframeMode = false; // Track if iframe is being used  
         let originalVideoElement; // Store original video element for restoration  
+        
 
         // Initialize Shaka Player  
         async function initPlayer() {
