@@ -1,474 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
 
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>web ipTv</title>  
-    <!-- Shaka Player scripts and styles -->  
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>  
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">  
-    <!-- Enhanced Anti-Debugging -->  
-    <!-- <script src="https://cdn.jsdelivr.net/npm/disable-devtool@latest"></script>  
-    <script>  
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>web ipTv</title>
+    <!-- Shaka Player scripts and styles -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"
+        crossorigin="anonymous">
+    <!-- Enhanced Anti-Debugging -->
+    <script src="https://cdn.jsdelivr.net/npm/disable-devtool@latest"></script>
+    <script>
         // Configure DisableDevtool to work across all devices  
-        DisableDevtool({  
-            disable: true,  
-            disableMenu: true,  
-            clearLog: true,  
-            disableSelect: true,  
-            disableCopy: true,  
-            disableCut: true,  
-            disablePaste: true,  
-            interval: 100,  
-            disableMobile: true,  
-            ondevtoolopen: function() {  
-                window.location.href = 'about:blank';  
-            }  
+        DisableDevtool({
+            disable: true,
+            disableMenu: true,
+            clearLog: true,
+            disableSelect: true,
+            disableCopy: true,
+            disableCut: true,
+            disablePaste: true,
+            interval: 100,
+            disableMobile: true,
+            ondevtoolopen: function () {
+                window.location.href = 'about:blank';
+            }
         });  
-    </script>   -->
-    <style>  
-        body {  
-            font-family: Arial, sans-serif;  
-            background-color: #222;  
-            color: white;  
-            margin: 0;  
-            padding: 20px;  
-        }  
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
 
-        #player-container {  
-            display: flex;  
-            flex-direction: column;  
-            align-items: center;  
-        }  
+        #player-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        [data-shaka-player-container] video, [data-shaka-player-container] iframe {  
-            width: 100%;  
-            height: 100%;  
-            max-width: 100%;  
-            margin-bottom: 20px;  
-            aspect-ratio: 16/9;  
-            border-radius: 10px;  
-            box-shadow: 0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f),  
-                        0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f);  
-            transition: box-shadow 0.2s ease;  
-            object-fit: contain;  
-        }  
+        [data-shaka-player-container] video,
+        [data-shaka-player-container] iframe {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            margin-bottom: 20px;
+            aspect-ratio: 16/9;
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f),
+                0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f);
+            transition: box-shadow 0.2s ease;
+            object-fit: contain;
+        }
 
-        #web-ipTV {  
-            font-size: 30px;  
-            font-weight: bold;  
-            color: transparent;  
-            background: linear-gradient(to right, #ff007f, #ff7f00, #7fff00, #00ff7f, #007fff, #0000ff);  
-            background-clip: text;  
-            -webkit-background-clip: text;  
-            animation: text-gradient 5s infinite;  
-            margin-bottom: 10px;  
-        }  
+        #web-ipTV {
+            font-size: 30px;
+            font-weight: bold;
+            color: transparent;
+            background: linear-gradient(to right, #ff007f, #ff7f00, #7fff00, #00ff7f, #007fff, #0000ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            animation: text-gradient 5s infinite;
+            margin-bottom: 10px;
+        }
 
-        @keyframes text-gradient {  
-            0%, 100% { background-position: 0% 50%; }  
-            50% { background-position: 100% 50%; }  
-        }  
+        @keyframes text-gradient {
 
-        #search-bar-container {  
-            display: flex;  
-            justify-content: space-between;  
-            width: 100%;  
-            margin: 20px 0;  
-            gap: 0;  
-        }  
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
 
-        #search-bar {  
-            width: 80%;  
-            padding: 10px;  
-            font-size: 16px;  
-            background-color: rgba(255, 255, 255, 0.1);  
-            border: none;  
-            border-radius: 5px 0 0 5px;  
-            color: white;  
-            backdrop-filter: blur(5px);  
-            transition: background-color 0.3s ease;  
-        }  
+            50% {
+                background-position: 100% 50%;
+            }
+        }
 
-        #search-bar:focus {  
-            outline: none;  
-            background-color: rgba(255, 255, 255, 0.2);  
-        }  
+        #search-bar-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin: 20px 0;
+            gap: 0;
+        }
 
-        #neon-switch {  
-            display: flex;  
-            align-items: center;  
-            width: 20%;  
-        }  
+        #search-bar {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px 0 0 5px;
+            color: white;
+            backdrop-filter: blur(5px);
+            transition: background-color 0.3s ease;
+        }
 
-        #neon-toggle {  
-            cursor: pointer;  
-            padding: 10px;  
-            border: 1px solid #555;  
-            border-radius: 0 5px 5px 0;  
-            background-color: rgba(255, 255, 255, 0.1);  
-            color: white;  
-            transition: background-color 0.3s ease, color 0.3s ease;  
-            width: 100%;  
-            text-align: center;  
-        }  
+        #search-bar:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
 
-        #neon-toggle.active {  
-            background-color: green;  
-            color: white;  
-        }  
+        #neon-switch {
+            display: flex;
+            align-items: center;
+            width: 20%;
+        }
 
-        #channel-list-container {  
-            width: 100%;  
-            max-height: 400px;  
-            overflow-y: scroll;  
-            scrollbar-width: thin;  
-        }  
+        #neon-toggle {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 0 5px 5px 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
 
-        #channel-list {  
-            display: grid;  
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));  
-            gap: 15px;  
-            width: 100%;  
-            margin-top: 20px;  
-        }  
+        #neon-toggle.active {
+            background-color: green;
+            color: white;
+        }
 
-        .channel-tile {  
-            display: flex;  
-            flex-direction: column;  
-            align-items: center;  
-            padding: 10px;  
-            cursor: pointer;  
-            background-color: #333;  
-            border-radius: 10px;  
-            transition: transform 0.2s;  
-        }  
+        #channel-list-container {
+            width: 100%;
+            max-height: 400px;
+            overflow-y: scroll;
+            scrollbar-width: thin;
+        }
 
-        .channel-tile:hover {  
-            transform: scale(1.05);  
-            background-color: #444;  
-        }  
+        #channel-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
 
-        .channel-tile img {  
-            width: 80px;  
-            height: 80px;  
-            margin-bottom: 10px;  
-            border-radius: 5px;  
-        }  
+        .channel-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            background-color: #333;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
 
-        .channel-name {  
-            font-size: 14px;  
-            text-align: center;  
-        }  
+        .channel-tile:hover {
+            transform: scale(1.05);
+            background-color: #444;
+        }
 
-        #loading {  
-            color: yellow;  
-            margin: 20px 0;  
-            display: none;  
-        }  
+        .channel-tile img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
 
-        #new-views-counter {  
-            margin-top: 20px;  
-            font-size: 16px;  
-            color: #fff;  
-            text-align: center;  
-        }  
+        .channel-name {
+            font-size: 14px;
+            text-align: center;
+        }
 
-        .shaka-overflow-menu { background-color: rgb(41, 41, 163); color: rgb(153, 153, 153); }  
-        .shaka-overflow-menu button:hover { background-color: rgb(45, 45, 45); }  
-        .shaka-overflow-button-label { color: rgb(245, 245, 245); }  
-        .shaka-current-selection-span { color: rgb(202, 202, 202); }  
-        .material-icons-round { color: rgb(230, 230, 230); }  
-        .shaka-settings-menu { background-color: rgb(35, 35, 35); color: rgb(255, 255, 255); }  
-        .shaka-settings-menu button { color: rgb(255, 255, 255); }  
-        .shaka-settings-menu button:hover { background-color: rgb(45, 45, 45); }  
-    </style>  
-</head>  
-<body>  
-    <div id="player-container">  
+        #loading {
+            color: yellow;
+            margin: 20px 0;
+            display: none;
+        }
+
+        #new-views-counter {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .shaka-overflow-menu {
+            background-color: rgb(41, 41, 163);
+            color: rgb(153, 153, 153);
+        }
+
+        .shaka-overflow-menu button:hover {
+            background-color: rgb(45, 45, 45);
+        }
+
+        .shaka-overflow-button-label {
+            color: rgb(245, 245, 245);
+        }
+
+        .shaka-current-selection-span {
+            color: rgb(202, 202, 202);
+        }
+
+        .material-icons-round {
+            color: rgb(230, 230, 230);
+        }
+
+        .shaka-settings-menu {
+            background-color: rgb(35, 35, 35);
+            color: rgb(255, 255, 255);
+        }
+
+        .shaka-settings-menu button {
+            color: rgb(255, 255, 255);
+        }
+
+        .shaka-settings-menu button:hover {
+            background-color: rgb(45, 45, 45);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="player-container">
         <div id="web-ipTV">𝚠𝚎𝚋 𝚒𝚙𝚃𝚟</div>
-        <!-- Shaka Player container -->  
-        <div data-shaka-player-container style="width: 100%;">  
-            <video data-shaka-player id="video" autoplay playsinline poster="https://raw.githubusercontent.com/rahul979854/iptvfree/refs/heads/main/file-WiLKJ5eW8LpCzRt2tFrgx9.webp"></video>  
-        </div>  
+        <!-- Shaka Player container -->
+        <div data-shaka-player-container style="width: 100%;">
+            <video data-shaka-player id="video" autoplay playsinline
+                poster="https://raw.githubusercontent.com/rahul979854/iptvfree/refs/heads/main/file-WiLKJ5eW8LpCzRt2tFrgx9.webp"></video>
+        </div>
 
-        <div id="search-bar-container">  
-            <input type="text" id="search-bar" placeholder="Search for channels..." onkeyup="filterChannels()">  
-            <div id="neon-switch">  
-                <div id="neon-toggle" class="active" onclick="toggleNeon()">lëd⚡</div>  
-            </div>  
-        </div>  
+        <div id="search-bar-container">
+            <input type="text" id="search-bar" placeholder="Search for channels..." onkeyup="filterChannels()">
+            <div id="neon-switch">
+                <div id="neon-toggle" class="active" onclick="toggleNeon()">lëd⚡</div>
+            </div>
+        </div>
 
-        <div id="loading">Loading channels...</div>  
-          
-        <div id="channel-list-container">  
-            <div id="channel-list"></div>  
-        </div>  
+        <div id="loading">Loading channels...</div>
+
+        <div id="channel-list-container">
+            <div id="channel-list"></div>
+        </div>
 
         <!-- BEGIN: Powered by Supercounters.com -->
-        <center><script type="text/javascript" src="//widget.supercounters.com/ssl/online_t.js"></script><script type="text/javascript">sc_online_t(1707487,"☜ online","FF0000");</script><br><noscript><a href="https://www.supercounters.com/">supercounters.com</a></noscript>
+        <center>
+            <script type="text/javascript" src="//widget.supercounters.com/ssl/online_t.js"></script>
+            <script type="text/javascript">sc_online_t(1707487, "☜ online", "FF0000");</script><br><noscript><a
+                    href="https://www.supercounters.com/">supercounters.com</a></noscript>
         </center>
         <!-- END: Powered by Supercounters.com -->
-        
+
         <!-- Added download links in same line -->
         <center>
             <p>
-                <a href="https://bit.ly/webipTVapp" style="color: #00ff7f; text-decoration: none;">apk app ⬇️</a>   
+                <a href="https://bit.ly/webipTVapp" style="color: #00ff7f; text-decoration: none;">apk app ⬇️</a>
                 <a href="https://bit.ly/ios_webipTV" style="color: #00ff7f; text-decoration: none;">ios app ⬇️</a>
             </p>
         </center>
-    </div>  
+    </div>
 
-    <script>  
-        const m3uLinkPrimary = 'https://raw.githubusercontent.com/drmlive/fancyode-live-events/refs/heads/main/fancode.m3u';  
-        const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/temp.live';  
-        const targetUrl = 'https://webiptv.updatesbyrahul.site/proxy/sgcor.php/https://linearjitp-playback.astro.com.my/dash-wv/linear/2504/default_ott.mpd?|drmScheme=clearkey&drmLicense=03c2e0af2f8159f9f0ce9b5dbc865f10:cd84ed136b0cc71f8ab8cd4d4f6a2e4c';  
-        let neonActive = true;  
+    <script>
+        const m3uLinkPrimary = 'https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.m3u';
+        const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/temp.live';
+        const targetUrl = 'https://webiptv.updatesbyrahul.site/proxy/sgcor.php/https://linearjitp-playback.astro.com.my/dash-wv/linear/2504/default_ott.mpd?|drmScheme=clearkey&drmLicense=03c2e0af2f8159f9f0ce9b5dbc865f10:cd84ed136b0cc71f8ab8cd4d4f6a2e4c';
+        let neonActive = true;
         let player; // Shaka Player instance  
         let isIframeMode = false; // Track if iframe is being used  
         let originalVideoElement; // Store original video element for restoration  
 
         // Initialize Shaka Player  
-        async function initPlayer() {  
-            const video = document.getElementById('video');  
+        async function initPlayer() {
+            const video = document.getElementById('video');
             originalVideoElement = video; // Store original video element  
-            const ui = video.ui;  
-            const controls = ui.getControls();  
-            player = controls.getPlayer();  
+            const ui = video.ui;
+            const controls = ui.getControls();
+            player = controls.getPlayer();
 
-            player.configure({  
-                streaming: {  
-                    rebufferingGoal: 1,  
-                    bufferingGoal: 3,  
-                    bufferBehind: 5,  
-                    autoLowLatencyMode: true,  
-                    lowLatencyMode: true,  
-                    jumpLargeGaps: true,  
-                    inaccurateManifestTolerance: 0.3,  
-                    stallEnabled: false,  
-                    retryParameters: {  
-                        timeout: 30000,  
-                        maxAttempts: 3,  
-                        baseDelay: 1000,  
-                        backoffFactor: 2  
-                    }  
-                },  
-                manifest: {  
-                    hls: {  
-                        ignoreTextStreamFailures: true,  
-                        useNativeHlsOnSafari: true,  
-                        defaultAudioCodec: "mp4a.40.2",  
-                        defaultVideoCodec: "avc1.4d401e",  
-                        customHlsConfig: {  
-                            xhrSetup: (xhr) => {  
-                                xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1');  
-                            }  
-                        }  
-                    },  
-                    dash: {  
-                        ignoreDrmInfo: true,  
-                        ignoreMinBufferTime: true,  
-                        autoCorrectDrift: true  
-                    }  
-                },  
-                abr: {  
-                    enabled: true,  
-                    defaultBandwidthEstimate: 2000000  
-                },  
-                preferredAudioCodecs: ['mp4a.40.2'],  
-                preferredVideoCodecs: ['avc1.4d401e']  
-            });  
+            player.configure({
+                streaming: {
+                    rebufferingGoal: 1,
+                    bufferingGoal: 3,
+                    bufferBehind: 5,
+                    autoLowLatencyMode: true,
+                    lowLatencyMode: true,
+                    jumpLargeGaps: true,
+                    inaccurateManifestTolerance: 0.3,
+                    stallEnabled: false,
+                    retryParameters: {
+                        timeout: 30000,
+                        maxAttempts: 3,
+                        baseDelay: 1000,
+                        backoffFactor: 2
+                    }
+                },
+                manifest: {
+                    hls: {
+                        ignoreTextStreamFailures: true,
+                        useNativeHlsOnSafari: true,
+                        defaultAudioCodec: "mp4a.40.2",
+                        defaultVideoCodec: "avc1.4d401e",
+                        customHlsConfig: {
+                            xhrSetup: (xhr) => {
+                                xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1');
+                            }
+                        }
+                    },
+                    dash: {
+                        ignoreDrmInfo: true,
+                        ignoreMinBufferTime: true,
+                        autoCorrectDrift: true
+                    }
+                },
+                abr: {
+                    enabled: true,
+                    defaultBandwidthEstimate: 2000000
+                },
+                preferredAudioCodecs: ['mp4a.40.2'],
+                preferredVideoCodecs: ['avc1.4d401e']
+            });
 
-            ui.configure({  
-                controlPanelElements: ["play_pause", "mute", "volume", "spacer", "time_and_duration", "quality", "fullscreen", "overflow_menu"],  
-                volumeBarColors: { base: 'rgba(63, 187, 1, 1)', level: 'rgb(255, 69, 0)' },  
-                seekBarColors: { base: 'rgb(41, 41, 163)', buffered: 'rgb(35, 99, 3)', played: 'rgba(63, 187, 1, 1)' }  
-            });  
+            ui.configure({
+                controlPanelElements: ["play_pause", "mute", "volume", "spacer", "time_and_duration", "quality", "fullscreen", "overflow_menu"],
+                volumeBarColors: { base: 'rgba(63, 187, 1, 1)', level: 'rgb(255, 69, 0)' },
+                seekBarColors: { base: 'rgb(41, 41, 163)', buffered: 'rgb(35, 99, 3)', played: 'rgba(63, 187, 1, 1)' }
+            });
 
-            player.addEventListener('error', onPlayerErrorEvent);  
+            player.addEventListener('error', onPlayerErrorEvent);
 
-            window.player = player;  
-            window.ui = ui;  
-        }  
+            window.player = player;
+            window.ui = ui;
+        }
 
-        function onPlayerErrorEvent(event) {  
-            console.error('Player Error:', event.detail);  
-        }  
+        function onPlayerErrorEvent(event) {
+            console.error('Player Error:', event.detail);
+        }
 
-        function toggleNeon() {  
-            const playerContainer = document.querySelector('[data-shaka-player-container]');  
-            const activeElement = isIframeMode ? playerContainer.querySelector('iframe') : playerContainer.querySelector('video');  
-            const toggleButton = document.getElementById('neon-toggle');  
+        function toggleNeon() {
+            const playerContainer = document.querySelector('[data-shaka-player-container]');
+            const activeElement = isIframeMode ? playerContainer.querySelector('iframe') : playerContainer.querySelector('video');
+            const toggleButton = document.getElementById('neon-toggle');
 
-            if (neonActive) {  
-                activeElement.style.boxShadow = 'none';  
-                toggleButton.classList.remove('active');  
-            } else {  
-                activeElement.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';  
-                toggleButton.classList.add('active');  
-            }  
-            neonActive = !neonActive;  
+            if (neonActive) {
+                activeElement.style.boxShadow = 'none';
+                toggleButton.classList.remove('active');
+            } else {
+                activeElement.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';
+                toggleButton.classList.add('active');
+            }
+            neonActive = !neonActive;
 
-            if (navigator.vibrate) {  
-                navigator.vibrate(100);  
-            }  
-        }  
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+        }
 
-        async function fetchM3U(url) {  
-            try {  
-                const response = await fetch(url);  
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);  
-                const data = await response.text();  
-                return parseM3U(data);  
-            } catch (error) {  
-                console.error(`Error fetching M3U file from ${url}:`, error);  
-                return [];  
-            }  
-        }  
+        async function fetchM3U(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.text();
+                return parseM3U(data);
+            } catch (error) {
+                console.error(`Error fetching M3U file from ${url}:`, error);
+                return [];
+            }
+        }
 
-        function parseM3U(data) {  
-            const channels = [];  
-            const lines = data.split('\n');  
-            let currentChannel = {};  
-            lines.forEach(line => {  
-                line = line.trim();  
-                if (line.startsWith('#EXTINF:')) {  
-                    const channelInfo = line.match(/#EXTINF:.*,(.*)/);  
-                    currentChannel.name = channelInfo ? channelInfo[1].trim() : 'Unknown Channel';  
-                    const logoMatch = line.match(/tvg-logo="(.*?)"/);  
-                    currentChannel.logo = logoMatch ? logoMatch[1] : '';  
-                } else if (line.startsWith('http')) {  
-                    currentChannel.url = line.trim();  
-                    if (currentChannel.url.includes('.mpd')) {  
-                        const [url, params] = currentChannel.url.split('|');  
-                        currentChannel.streamUrl = url;  
-                        if (params) {  
-                            const drmParams = new URLSearchParams(params);  
-                            currentChannel.drmScheme = drmParams.get('drmScheme');  
-                            const drmLicense = drmParams.get('drmLicense');  
-                            if (drmLicense) {  
-                                const [keyId, key] = drmLicense.split(':');  
-                                currentChannel.drm = { keyId, key };  
-                            }  
-                        }  
-                    } else {  
-                        currentChannel.streamUrl = currentChannel.url;  
-                    }  
-                    channels.push(currentChannel);  
-                    currentChannel = {};  
-                }  
-            });  
-            return channels.filter(channel => channel.streamUrl);  
-        }  
+        function parseM3U(data) {
+            const channels = [];
+            const lines = data.split('\n');
+            let currentChannel = {};
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const channelInfo = line.match(/#EXTINF:.*,(.*)/);
+                    currentChannel.name = channelInfo ? channelInfo[1].trim() : 'Unknown Channel';
+                    const logoMatch = line.match(/tvg-logo="(.*?)"/);
+                    currentChannel.logo = logoMatch ? logoMatch[1] : '';
+                } else if (line.startsWith('http')) {
+                    currentChannel.url = line.trim();
+                    if (currentChannel.url.includes('.mpd')) {
+                        const [url, params] = currentChannel.url.split('|');
+                        currentChannel.streamUrl = url;
+                        if (params) {
+                            const drmParams = new URLSearchParams(params);
+                            currentChannel.drmScheme = drmParams.get('drmScheme');
+                            const drmLicense = drmParams.get('drmLicense');
+                            if (drmLicense) {
+                                const [keyId, key] = drmLicense.split(':');
+                                currentChannel.drm = { keyId, key };
+                            }
+                        }
+                    } else {
+                        currentChannel.streamUrl = currentChannel.url;
+                    }
+                    channels.push(currentChannel);
+                    currentChannel = {};
+                }
+            });
+            return channels.filter(channel => channel.streamUrl);
+        }
 
-        async function loadChannels() {  
-            const loadingDiv = document.getElementById('loading');  
-            loadingDiv.style.display = 'block';  
+        async function loadChannels() {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
 
-            const primaryChannels = await fetchM3U(m3uLinkPrimary);  
-            const secondaryChannels = await fetchM3U(m3uLinkSecondary);  
+            const primaryChannels = await fetchM3U(m3uLinkPrimary);
+            const secondaryChannels = await fetchM3U(m3uLinkSecondary);
 
-            const channels = [...primaryChannels, ...secondaryChannels];  
+            const channels = [...primaryChannels, ...secondaryChannels];
 
-            loadingDiv.style.display = 'none';  
-            const channelList = document.getElementById('channel-list');  
+            loadingDiv.style.display = 'none';
+            const channelList = document.getElementById('channel-list');
 
-            if (channels.length === 0) {  
-                channelList.innerHTML = '<div>No channels found.</div>';  
-                return;  
-            }  
+            if (channels.length === 0) {
+                channelList.innerHTML = '<div>No channels found.</div>';
+                return;
+            }
 
-            const targetChannel = channels.find(channel => channel.url === targetUrl);  
-            let initialChannel = targetChannel || channels[0];  
+            const targetChannel = channels.find(channel => channel.url === targetUrl);
+            let initialChannel = targetChannel || channels[0];
 
-            try {  
-                await playChannel(initialChannel);  
-            } catch (error) {  
-                console.error('Target channel failed, falling back to first channel:', error);  
-                if (initialChannel !== channels[0]) {  
-                    await playChannel(channels[0]);  
-                }  
-            }  
+            try {
+                await playChannel(initialChannel);
+            } catch (error) {
+                console.error('Target channel failed, falling back to first channel:', error);
+                if (initialChannel !== channels[0]) {
+                    await playChannel(channels[0]);
+                }
+            }
 
-            channels.forEach(channel => {  
-                const tile = document.createElement('div');  
-                tile.classList.add('channel-tile');  
+            channels.forEach(channel => {
+                const tile = document.createElement('div');
+                tile.classList.add('channel-tile');
 
-                const logoImg = document.createElement('img');  
-                logoImg.src = channel.logo || 'https://via.placeholder.com/80';  
-                tile.appendChild(logoImg);  
+                const logoImg = document.createElement('img');
+                logoImg.src = channel.logo || 'https://via.placeholder.com/80';
+                tile.appendChild(logoImg);
 
-                const channelName = document.createElement('div');  
-                channelName.classList.add('channel-name');  
-                channelName.textContent = channel.name;  
-                tile.appendChild(channelName);  
+                const channelName = document.createElement('div');
+                channelName.classList.add('channel-name');
+                channelName.textContent = channel.name;
+                tile.appendChild(channelName);
 
-                tile.onclick = () => playChannel(channel);  
-                channelList.appendChild(tile);  
-            });  
-        }  
+                tile.onclick = () => playChannel(channel);
+                channelList.appendChild(tile);
+            });
+        }
 
-        async function playChannel(channel) {  
-            const playerContainer = document.querySelector('[data-shaka-player-container]');  
-            
+        async function playChannel(channel) {
+            const playerContainer = document.querySelector('[data-shaka-player-container]');
+
             // Check if the channel URL is an iframe-based link  
-            const isIframeLink = /(re\.fredflix\.fun\/sports\/play\.php|sliv\.fredflix\.fun\/play\.php|fredflix\.fun\/play\.php|re\.fredflix\.fun\/Jio\/play\.php|user65873\.hls-video\.net)/.test(channel.streamUrl);  
+            const isIframeLink = /(re\.fredflix\.fun|sliv\.fredflix\.fun\/play\.php|fredflix\.fun\/play\.php|re\.fredflix\.fun\/Jio\/play\.php|user65873\.hls-video\.net|ok\.ru|psplay\.site)/.test(channel.streamUrl);
 
-            if (isIframeLink) {  
+            if (isIframeLink) {
                 // Switch to iframe mode  
-                if (!isIframeMode) {  
+                if (!isIframeMode) {
                     // Remove video element and create iframe  
-                    const video = document.getElementById('video');  
-                    video.remove();  
-                    const iframe = document.createElement('iframe');  
-                    iframe.id = 'video-iframe';  
-                    iframe.style.width = '100%';  
-                    iframe.style.height = '100%';  
-                    iframe.style.border = 'none';  
-                    iframe.style.borderRadius = '10px';  
-                    iframe.style.objectFit = 'contain';  
-                    iframe.allow = 'autoplay; fullscreen';  
-                    iframe.allowFullscreen = true;  
-                    playerContainer.appendChild(iframe);  
-                    isIframeMode = true;  
+                    const video = document.getElementById('video');
+                    video.remove();
+                    const iframe = document.createElement('iframe');
+                    iframe.id = 'video-iframe';
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    iframe.style.borderRadius = '10px';
+                    iframe.style.objectFit = 'contain';
+                    iframe.allow = 'autoplay; fullscreen';
+                    iframe.allowFullscreen = true;
+                    playerContainer.appendChild(iframe);
+                    isIframeMode = true;
 
                     // Reapply neon effect if active  
-                    if (neonActive) {  
-                        iframe.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';  
-                    }  
-                }  
+                    if (neonActive) {
+                        iframe.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';
+                    }
+                }
 
                 // Set iframe source  
-                const iframe = document.getElementById('video-iframe');  
-                iframe.src = channel.streamUrl;  
-                console.log('Iframe loaded:', channel.streamUrl);  
+                const iframe = document.getElementById('video-iframe');
+                iframe.src = channel.streamUrl;
+                console.log('Iframe loaded:', channel.streamUrl);
 
                 // Hide Shaka Player controls for iframe  
-                const controls = document.querySelector('.shaka-controls-container');  
-                if (controls) controls.style.display = 'none';  
-            } else {  
+                const controls = document.querySelector('.shaka-controls-container');
+                if (controls) controls.style.display = 'none';
+            } else {
                 // Switch back to video mode if in iframe mode  
-                if (isIframeMode) {  
+                if (isIframeMode) {
                     // Remove iframe and restore video element  
-                    const iframe = document.getElementById('video-iframe');  
-                    if (iframe) iframe.remove();  
-                    playerContainer.appendChild(originalVideoElement);  
-                    isIframeMode = false;  
+                    const iframe = document.getElementById('video-iframe');
+                    if (iframe) iframe.remove();
+                    playerContainer.appendChild(originalVideoElement);
+                    isIframeMode = false;
 
                     // Reapply neon effect if active  
-                    if (neonActive) {  
-                        originalVideoElement.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';  
-                    }  
+                    if (neonActive) {
+                        originalVideoElement.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';
+                    }
 
                     // Show Shaka Player controls  
-                    const controls = document.querySelector('.shaka-controls-container');  
-                    if (controls) controls.style.display = '';  
-                }  
+                    const controls = document.querySelector('.shaka-controls-container');
+                    if (controls) controls.style.display = '';
+                }
 
                 // Play stream using Shaka Player  
-                try {  
-                    player.configure({ drm: { servers: {}, clearKeys: {} } });  
+                try {
+                    player.configure({ drm: { servers: {}, clearKeys: {} } });
 
                     // Extract referer from URL parameters if present
                     let referer = '';
@@ -479,7 +519,7 @@
 
                     // Configure network request to include referer header
                     player.getNetworkingEngine().registerRequestFilter((type, request) => {
-                        if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST || 
+                        if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
                             type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
                             if (referer) {
                                 request.headers['referer'] = referer;
@@ -487,48 +527,49 @@
                         }
                     });
 
-                    if (channel.streamUrl.includes('.mpd') && channel.drm && channel.drmScheme === 'clearkey' && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {  
-                        player.configure({  
-                            drm: {  
-                                clearKeys: {  
-                                    [channel.drm.keyId]: channel.drm.key  
-                                }  
-                            }  
-                        }); 
-                        console.log('DRM Configured for DASH:', { keyId: channel.drm.keyId, key: channel.drm.key });  
-                    }  
+                    if (channel.streamUrl.includes('.mpd') && channel.drm && channel.drmScheme === 'clearkey' && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                        player.configure({
+                            drm: {
+                                clearKeys: {
+                                    [channel.drm.keyId]: channel.drm.key
+                                }
+                            }
+                        });
+                        console.log('DRM Configured for DASH:', { keyId: channel.drm.keyId, key: channel.drm.key });
+                    }
 
                     await player.load(channel.streamUrl.split('|')[0]); // Load only the stream URL without parameters
-                    console.log('Stream loaded successfully:', channel.streamUrl);  
-                } catch (error) {  
-                    console.error('Error loading stream:', error);  
-                    throw error;  
-                }  
-            }  
-        }  
+                    console.log('Stream loaded successfully:', channel.streamUrl);
+                } catch (error) {
+                    console.error('Error loading stream:', error);
+                    throw error;
+                }
+            }
+        }
 
-        function filterChannels() {  
-            const searchValue = document.getElementById('search-bar').value.toLowerCase();  
-            const channelTiles = document.querySelectorAll('.channel-tile');  
-            channelTiles.forEach(tile => {  
-                const channelName = tile.querySelector('.channel-name').textContent.toLowerCase();  
-                tile.style.display = channelName.includes(searchValue) ? '' : 'none';  
-            });  
-        }  
+        function filterChannels() {
+            const searchValue = document.getElementById('search-bar').value.toLowerCase();
+            const channelTiles = document.querySelectorAll('.channel-tile');
+            channelTiles.forEach(tile => {
+                const channelName = tile.querySelector('.channel-name').textContent.toLowerCase();
+                tile.style.display = channelName.includes(searchValue) ? '' : 'none';
+            });
+        }
 
-        function updateNewViewsCounter() {  
-            const viewsCounter = document.getElementById('new-views-counter');  
-            let views = sessionStorage.getItem('totalViews') || 0;  
-            views = parseInt(views) + 1;  
-            sessionStorage.setItem('totalViews', views);  
-            viewsCounter.textContent = `Total Views: ${views}`;  
-        }  
+        function updateNewViewsCounter() {
+            const viewsCounter = document.getElementById('new-views-counter');
+            let views = sessionStorage.getItem('totalViews') || 0;
+            views = parseInt(views) + 1;
+            sessionStorage.setItem('totalViews', views);
+            viewsCounter.textContent = `Total Views: ${views}`;
+        }
 
-        window.onload = async () => {  
-            await initPlayer();  
-            loadChannels();  
-            updateNewViewsCounter();  
+        window.onload = async () => {
+            await initPlayer();
+            loadChannels();
+            updateNewViewsCounter();
         };  
-    </script>  
-</body>  
+    </script>
+</body>
+
 </html>
