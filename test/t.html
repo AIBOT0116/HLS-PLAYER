@@ -29,7 +29,7 @@
             }
         });  
     </script> -->
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -243,33 +243,18 @@
         <div id="channel-list-container">
             <div id="channel-list"></div>
         </div>
-
-        <!-- BEGIN: Powered by Supercounters.com -->
-        <center>
-            <script type="text/javascript" src="//widget.supercounters.com/ssl/online_t.js"></script>
-            <script type="text/javascript">sc_online_t(1707487, "☜ online", "FF0000");</script><br><noscript><a
-                    href="https://www.supercounters.com/">supercounters.com</a></noscript>
-        </center>
-        <!-- END: Powered by Supercounters.com -->
-
-        <!-- Added download links in same line -->
-        <center>
-            <p>
-                <a href="https://bit.ly/webipTVapp" style="color: #00ff7f; text-decoration: none;">apk app ⬇️</a>
-                <a href="https://bit.ly/ios_webipTV" style="color: #00ff7f; text-decoration: none;">ios app ⬇️</a>
-            </p>
-        </center>
     </div>
 
     <script>
-        const m3uLinkPrimary = 'https://astro-mpd-proxy.vercel.app/?get=2504';
-        const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/temp.live';
-        const targetUrl = 'https://webiptv.updatesbyrahul.site/proxy/sgcor.php/https://linearjitp-playback.astro.com.my/dash-wv/linear/2504/default_ott.mpd?|drmScheme=clearkey&drmLicense=03c2e0af2f8159f9f0ce9b5dbc865f10:cd84ed136b0cc71f8ab8cd4d4f6a2e4c';
+        const m3uAs = 'https://files.catbox.moe/bvrbwy.m3u';
+        const m3uLinkPrimary = 'https://raw.githubusercontent.com/drmlive/fancyode-live-events/refs/heads/main/fancode.m3u';
+        const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/logo_img';
+        const targetUrl = 'https://a201aivottlinear-a.akamaihd.net/OTTB/lhr-nitro/clients/dash/enc/wf8usag51e/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd?|drmScheme=clearkey&drmLicense=ae26845bd33038a9c0774a0981007294:63ac662dde310cfb4cc6f9b43b34196d';
         let neonActive = true;
         let player; // Shaka Player instance  
         let isIframeMode = false; // Track if iframe is being used  
         let originalVideoElement; // Store original video element for restoration  
-        
+
 
         // Initialize Shaka Player  
         async function initPlayer() {
@@ -408,10 +393,11 @@
             const loadingDiv = document.getElementById('loading');
             loadingDiv.style.display = 'block';
 
+            const fstCh = await fetchM3U(m3uAs);
             const primaryChannels = await fetchM3U(m3uLinkPrimary);
             const secondaryChannels = await fetchM3U(m3uLinkSecondary);
 
-            const channels = [...primaryChannels, ...secondaryChannels];
+            const channels = [...fstCh, ...primaryChannels, ...secondaryChannels];
 
             loadingDiv.style.display = 'none';
             const channelList = document.getElementById('channel-list');
@@ -556,14 +542,6 @@
                 const channelName = tile.querySelector('.channel-name').textContent.toLowerCase();
                 tile.style.display = channelName.includes(searchValue) ? '' : 'none';
             });
-        }
-
-        function updateNewViewsCounter() {
-            const viewsCounter = document.getElementById('new-views-counter');
-            let views = sessionStorage.getItem('totalViews') || 0;
-            views = parseInt(views) + 1;
-            sessionStorage.setItem('totalViews', views);
-            viewsCounter.textContent = `Total Views: ${views}`;
         }
 
         window.onload = async () => {
